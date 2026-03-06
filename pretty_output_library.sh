@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 STDOUT_LOG_PATH="/dev/null"
-STDERR_LOG_PATH="/tmp/minideberrors.log"
+STDERR_LOG_PATH="/tmp/debianpreseterrors.log"
 
 # Function to show a spinner and handle exit status
 task_output() {

@@ -32,6 +32,8 @@ then
     exit 1
 fi
 
+STDERR_LOG_PATH="/tmp/debianpresetusererrors.log"
+
 ensure_commands_installed()
 {
     for cmd in ${REQUIRED_COMMANDS[@]}
