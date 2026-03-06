@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# run_as_admin.sh - part of the DebianPreset project
+# Copyright (C) 2026, Scott Wyman, development@scottwyman.me
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+REQUIRED_COMMANDS=(\
+    grep \
+)
+
+PRETTY_OUTPUT_LIBRARY=./pretty_output_library.sh
+
+if ! source $PRETTY_OUTPUT_LIBRARY &>/dev/null
+then
+    printf "\n\n\e[31m%s %s\e[0m\n\n" \
+        "[!] Couldn't source the pretty output library. Make sure you're" \
+        "in the base directory of ./DebianPreset before running scripts."
+    exit 1
+fi
+
+ensure_commands_installed()
+{
+    for cmd in ${REQUIRED_COMMANDS[@]}
+    do
+        if ! command -v $cmd &>/dev/null
+        then
+            printf "\n\n\e[31m%s %s\e[0m\n\n" \
+                "[!] Missing required command: '$cmd'. This shouldn't" \
+                "happen...stopping"
+            exit 1
+        fi
+    done
+}
+
+ensure_commands_installed
+
+install_configure_flatpak()
+{
+    if ! dpkg -s flatpak &>/dev/null
+    then
+        sudo -v || return 1
+        sudo apt-get install --yes flatpak \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Install flatpak"
+        [[ $? -ne 0 ]] && return 1
+    fi
+
+    if flatpak remote-delete --system flathub &>/dev/null
+    then
+        printf "\e[32m[Success]\e[0m %s\n" \
+            "Remove --system flathub remote from flatpak"
+    fi
+
+    if ! dpkg -s gnome-software-plugin-flatpak &>/dev/null
+    then
+        sudo -v || return 1
+        sudo apt-get install --yes gnome-software-plugin-flatpak \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Install flatpak plugin for gnome-software"
+        [[ $? -ne 0 ]] && return 1
+    fi
+
+    # We don't want the user installing any system packages
+    if dpkg -s gnome-software-plugin-deb &>/dev/null
+    then
+        sudo -v || return 1
+        sudo apt-get remove --yes gnome-software-plugin-deb \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Remove deb plugin for gnome-software"
+        [[ $? -ne 0 ]] && return 1
+    fi
+
+    if dpkg -s gnome-software-plugin-fwupd &>/dev/null
+    then
+        sudo -v || return 1
+        sudo apt-get remove --yes gnome-software-plugin-fwupd \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Remove fwupd plugin for gnome-software"
+        [[ $? -ne 0 ]] && return 1
+    fi
+}
+
+install_configure_flatpak

@@ -19,6 +19,7 @@
 REQUIRED_COMMANDS=(\
     grep \
     gnome-extensions \
+    flatpak \
 )
 
 PRETTY_OUTPUT_LIBRARY=./pretty_output_library.sh
@@ -37,8 +38,9 @@ ensure_commands_installed()
     do
         if ! command -v $cmd &>/dev/null
         then
-            printf "\n\n\e[31m%s\e[0m\n\n" \
-                "[!] Missing required command: '$cmd'"
+            printf "\n\n\e[31m%s %s\e[0m\n\n" \
+                "[!] Missing required command: '$cmd'. Make sure" \
+                "to \`bash run_as_admin.sh\` before running this script!"
             exit 1
         fi
     done
@@ -111,7 +113,7 @@ setup_gnome_extensions()
             install_cmd_return_code=$?
             if [[ $install_cmd_return_code -eq 0 ]]
             then
-                printf "\n\e[32m[Success]\e[0m %s\n" \
+                printf "\e[32m[Success]\e[0m %s\n" \
                     "Install Gnome extension: '$ext_path'"
             elif [[ $install_cmd_return_code -ne 2 ]]
             then
@@ -129,4 +131,18 @@ setup_gnome_extensions()
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
 }
 
+setup_flatpak_user_repo()
+{
+    if ! flatpak remotes | grep "flathub" | grep "user" &>/dev/null
+    then
+        flatpak remote-add --if-not-exists --user flathub \
+            https://flathub.org/repo/flathub.flatpakrepo \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Add remote source 'flathub' to flatpak"
+        [[ $? -ne 0 ]] && return 1
+    fi
+}
+
 setup_gnome_extensions
+setup_flatpak_user_repo
