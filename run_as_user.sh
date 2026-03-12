@@ -34,6 +34,8 @@ fi
 
 STDERR_LOG_PATH="/tmp/debianpresetusererrors.log"
 
+VIM_CONFIG_URL="https://raw.githubusercontent.com/JustScott/Arch-Setup/refs/heads/cli/Configurations/init.vim"
+
 ensure_commands_installed()
 {
     for cmd in ${REQUIRED_COMMANDS[@]}
@@ -146,5 +148,129 @@ setup_flatpak_user_repo()
     fi
 }
 
+setup_nvim()
+{
+    if [[ \
+        -f "$HOME/.local/share/nvim/site/autoload/plug.vim" \
+        && -f "$HOME/.config/nvim/init.vim" && -L "$HOME/.vimrc" ]]
+    then
+        return 0
+    fi
+
+    printf "\e[36m[...]\e[0m %s" "Load custom neovim config file"
+
+    if ! command -v nvim &>/dev/null
+    then
+        printf "\r\e[33m%s\e[0m\n" \
+            "[!] neovim isn't installed...skipping wget neovim config file"
+        return 1
+    fi
+
+    mkdir -p $HOME/.config/nvim
+    if [[ -z "$VIM_CONFIG_URL" ]]
+    then
+        printf "\r\e[33m%s %s\e[0m\n" \
+            "[!] neovim config file URL isn't set...skipping wget" \
+            "neovim config file"
+        return 1
+    fi
+
+    if ! wget "$VIM_CONFIG_URL" &>/dev/null
+    then
+        printf "\r\e[33m%s %s\e[0m\n" \
+            "[!] Failed to wget custom vim/neovim config file... either" \
+            "the URL is wrong, or you're having trouble reaching the internet."
+        return 1
+    fi
+
+    if ! [[ -f "./init.vim" ]]
+    then
+        printf "\r\e[33m%s %s\e[0m\n" \
+            "[!] wget succeeded, but init.vim doesn't exist. This shouldn't" \
+            "happen... skipping vim/neovim setup"
+        return 1
+    fi
+
+    if grep "nnoremap" ./init.vim &>/dev/null
+    then
+        cp init.vim $HOME/.config/nvim/ 2>$STDERR_LOG_PATH
+        ln -sf $HOME/.config/nvim/init.vim $HOME/.vimrc &>/dev/null
+        printf "\r\e[32m[Success]\e[0m %s\n" "Load custom neovim config file"
+    else
+        printf "\r\e[33m%s %s\e[0m\n" \
+            "[!] vim config file downloaded, but the files content isn't as it" \
+            "should be... maybe the \$VIM_CONFIG_URL variable is outdated?"
+        return 1
+    fi
+
+    if ! [[ -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]]
+    then
+        mkdir -p $HOME/.local/share/nvim/site/autoload &>/dev/null
+        {
+            curl -Lo $HOME/.local/share/nvim/site/autoload/plug.vim \
+                https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+            nvim -c "PlugInstall | qall" --headless
+        } >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        if ! task_output $! "$STDERR_LOG_PATH" "Download & Install vim-plug"
+        then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+set_default_editor()
+{
+    BASHRC_FILE=$HOME/.bashrc
+    default_editor=nano
+
+    if command -v nvim &>/dev/null
+    then
+        default_editor=nvim
+    else
+        if command -v vim &>/dev/null
+        then
+            default_editor=vim
+        fi
+    fi
+
+    if [[ -z "$BASHRC_FILE" ]]
+    then
+        if ! touch $BASHRC_FILE &>/dev/null
+        then
+            printf "\e[33m%s %s\e[0m\n" \
+                "[!] .bashrc file doesn't exist and can't be created. This" \
+                "shouldn't happen...skip setting default editor"
+            return 1
+        fi
+    fi
+
+    changed_editor="false"
+
+    if grep "^export EDITOR=" $BASHRC_FILE &>/dev/null
+    then
+        if ! grep "^export EDITOR=$default_editor$" $BASHRC_FILE &>/dev/null
+        then
+            sed -i 's,^export EDITOR.*,export EDITOR='"$default_editor"',' $BASHRC_FILE
+            changed_editor="true"
+        fi
+    else
+        echo "export EDITOR=$default_editor" >> $BASHRC_FILE
+        changed_editor="true"
+    fi
+
+    if grep "^export EDITOR=$default_editor$" $BASHRC_FILE &>/dev/null
+    then
+        if [[ "$changed_editor" == "true" ]]
+        then
+            printf "\e[32m[Success]\e[0m %s\n" "Set default editor to $default_editor"
+        fi
+        return 0
+    fi
+}
+
 setup_gnome_extensions
 setup_flatpak_user_repo
+setup_nvim
+set_default_editor
