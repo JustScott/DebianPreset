@@ -47,6 +47,35 @@ ensure_commands_installed()
 
 ensure_commands_installed
 
+check_for_cache_server()
+{
+    if apt-config dump | grep "Proxy" &>/dev/null
+    then
+        cache_server_url=$(\
+            apt-config dump \
+            | grep "Proxy" \
+            | awk -F'Proxy ' '{print $2}' \
+            | awk -F';' '{print $1}')
+        if [[ -n "$cache_server_url" ]]
+        then
+            curl --max-time 5 "$cache_server_url" \
+                1>/dev/null 2>$STDERR_LOG_PATH &
+            task_output $! "$STDERR_LOG_PATH" \
+                "Check connection to apt cache server at '$cache_server_url'"
+            if [[ $? -ne 0 ]]
+            then
+                printf "\n\n\e[36m%s\e[0m\n\n" \
+                    "[TIP] rm /etc/apt/apt.conf.d/10proxy to disable apt cache"
+                exit 1
+            fi
+        fi
+    fi
+
+    return 0
+}
+
+check_for_cache_server
+
 install_configure_flatpak()
 {
     if ! dpkg -s flatpak &>/dev/null
