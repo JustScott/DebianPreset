@@ -32,7 +32,7 @@ then
     exit 1
 fi
 
-STDERR_LOG_PATH="/tmp/debianpresetusererrors.log"
+STDERR_LOG_PATH="/tmp/${USER}_debianpresetusererrors.log"
 
 VIM_CONFIG_URL="https://raw.githubusercontent.com/JustScott/Arch-Setup/refs/heads/cli/Configurations/init.vim"
 
