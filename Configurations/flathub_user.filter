@@ -1,0 +1,19 @@
+deny *
+
+allow runtime/*
+
+# Browsers
+allow org.gnome.Epiphany
+allow org.mozilla.firefox
+allow com.google.Chrome
+allow com.microsoft.Edge
+
+# Productivity
+allow org.libreoffice.LibreOffice
+allow org.freecad.FreeCAD
+allow org.godotengine.Godot
+
+# Games
+allow org.gnome.Aisleriot
+allow org.kde.kpat
+allow org.muttum.muttum

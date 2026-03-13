@@ -94,6 +94,35 @@ install_configure_flatpak()
             "Remove --system flathub remote from flatpak"
     fi
 
+    if ! cmp -s ./Configurations/flathub_user.filter \
+        /etc/flatpak/flathub_user.filter &>/dev/null
+    then
+        sudo -v || return 1
+
+        if ! [[ -d /etc/flatpak ]]
+        then
+            sudo mkdir -p /etc/flatpak &>/dev/null
+        fi
+
+        if ! sudo cp ./Configurations/flathub_user.filter \
+            /etc/flatpak/flathub_user.filter 1>/dev/null 2>$STDERR_LOG_PATH
+        then
+            printf "\n\e[31m%s %s\e[0m\n" \
+                "[!] Failed to cp flathub filter to /etc/flatpak." \
+                "This shouldn't happen...stopping"
+            exit 1
+        fi
+
+        if ! sudo chmod o+r /etc/flatpak/flathub_user.filter &>/dev/null
+        then
+            printf "\n\e[31m%s %s %s\e[0m\n" \
+                "[!] Failed to allow read access to" \
+                "'/etc/flatpak/flathub_user.filter'. This shouldn't" \
+                "happen...stopping"
+            exit 1
+        fi
+    fi
+
     if ! dpkg -s gnome-software-plugin-flatpak &>/dev/null
     then
         sudo -v || return 1

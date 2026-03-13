@@ -140,6 +140,7 @@ setup_flatpak_user_repo()
     if ! flatpak remotes | grep "flathub" | grep "user" &>/dev/null
     then
         flatpak remote-add --if-not-exists --user flathub \
+            --filter=/etc/flatpak/flathub_user.filter \
             https://flathub.org/repo/flathub.flatpakrepo \
             >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
         task_output $! "$STDERR_LOG_PATH" \
