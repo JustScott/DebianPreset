@@ -70,10 +70,10 @@ then
     exit 1
 fi
 
-if ! cmp -s ./DebianInstaller/Configurations/google-chrome \
+if ! cmp -s ./Configurations/google-chrome \
     /etc/apt/apt.conf.d/google-chrome &>/dev/null
 then
-    sudo cp ./DebianInstaller/Configurations/google-chrome \
+    sudo cp ./Configurations/google-chrome \
         /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" \
         "cp google-chrome unattended upgrades file to /etc/apt/apt.conf.d/"
