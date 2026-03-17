@@ -51,8 +51,14 @@ ensure_commands_installed
 
 if ! dpkg -s google-chrome-stable &>/dev/null
 then
-    wget "$CHROME_URL" 1>/dev/null 2>>$STDERR_LOG_PATH &
+    curl -s -L "$CHROME_URL" -o "google-chrome-stable_current_amd64.deb" \
+        1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
+    [[ $? -ne 0 ]] && exit 1
+
+    sudo apt-get install -y "./google-chrome-stable_current_amd64.deb" \
+        1>/dev/null 2>>$STDERR_LOG_PATH &
+    task_output $! "$STDERR_LOG_PATH" "Install Google Chrome"
     [[ $? -ne 0 ]] && exit 1
 fi
 
@@ -64,10 +70,10 @@ then
     exit 1
 fi
 
-if ! cmp -s ./DebianInstaller/configuration_files/google-chrome \
+if ! cmp -s ./DebianInstaller/Configurations/google-chrome \
     /etc/apt/apt.conf.d/google-chrome &>/dev/null
 then
-    sudo cp ./DebianInstaller/configuration_files/google-chrome \
+    sudo cp ./DebianInstaller/Configurations/google-chrome \
         /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" \
         "cp google-chrome unattended upgrades file to /etc/apt/apt.conf.d/"
