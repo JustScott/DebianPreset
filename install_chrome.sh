@@ -50,10 +50,11 @@ ensure_commands_installed()
 ensure_commands_installed
 
 if ! dpkg -s google-chrome-stable &>/dev/null
+then
     wget "$CHROME_URL" 1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
     [[ $? -ne 0 ]] && exit 1
-then
+fi
 
 if ! [[ -d "/etc/apt/apt.conf.d" ]]
 then
