@@ -18,7 +18,7 @@
 
 
 REQUIRED_COMMANDS=(\
-    cmp unattended-upgrades
+    cmp unattended-upgrades \
 )
 
 CHROME_URL="https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
@@ -50,7 +50,7 @@ ensure_commands_installed()
 ensure_commands_installed
 
 if ! dpkg -s google-chrome-stable &>/dev/null
-    wget "$CHROME_URL" 1>/dev/null 2>$STDERR_LOG_PATH &
+    wget "$CHROME_URL" 1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
     [[ $? -ne 0 ]] && exit 1
 then
@@ -67,7 +67,7 @@ if ! cmp -s ./DebianInstaller/configuration_files/google-chrome \
     /etc/apt/apt.conf.d/google-chrome &>/dev/null
 then
     sudo cp ./DebianInstaller/configuration_files/google-chrome \
-        /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>$STDERR_LOG_PATH &
+        /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>>$STDERR_LOG_PATH &
     task_output $! "$STDERR_LOG_PATH" \
         "cp google-chrome unattended upgrades file to /etc/apt/apt.conf.d/"
     [[ $? -ne 0 ]] && exit 1

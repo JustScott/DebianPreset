@@ -147,6 +147,8 @@ setup_flatpak_user_repo()
             "Add remote source 'flathub' to flatpak"
         [[ $? -ne 0 ]] && return 1
     fi
+
+    flatpak update --user --appstream &>/dev/null
 }
 
 setup_nvim()
@@ -194,7 +196,7 @@ setup_nvim()
 
     if grep "nnoremap" ./init.vim &>/dev/null
     then
-        cp init.vim $HOME/.config/nvim/ 2>$STDERR_LOG_PATH
+        cp init.vim $HOME/.config/nvim/ 2>>$STDERR_LOG_PATH
         ln -sf $HOME/.config/nvim/init.vim $HOME/.vimrc &>/dev/null
         printf "\r\e[32m[Success]\e[0m %s\n" "Load custom neovim config file"
     else

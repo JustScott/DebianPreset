@@ -59,7 +59,7 @@ check_for_cache_server()
         if [[ -n "$cache_server_url" ]]
         then
             curl --max-time 5 "$cache_server_url" \
-                1>/dev/null 2>$STDERR_LOG_PATH &
+                1>/dev/null 2>>$STDERR_LOG_PATH &
             task_output $! "$STDERR_LOG_PATH" \
                 "Check connection to apt cache server at '$cache_server_url'"
             if [[ $? -ne 0 ]]
@@ -105,7 +105,7 @@ install_configure_flatpak()
         fi
 
         if ! sudo cp ./Configurations/flathub_user.filter \
-            /etc/flatpak/flathub_user.filter 1>/dev/null 2>$STDERR_LOG_PATH
+            /etc/flatpak/flathub_user.filter 1>/dev/null 2>>$STDERR_LOG_PATH
         then
             printf "\n\e[31m%s %s\e[0m\n" \
                 "[!] Failed to cp flathub filter to /etc/flatpak." \
