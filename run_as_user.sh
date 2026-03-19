@@ -273,7 +273,45 @@ set_default_editor()
     fi
 }
 
+add_default_wallpapers()
+{
+    BACKGROUNDS_DIR="$HOME/.local/share/backgrounds/"
+
+    if ! [[ -d "$BACKGROUNDS_DIR" ]]
+    then
+        if ! mkdir -p "$BACKGROUNDS_DIR" &>/dev/null
+        then
+            printf "\n\e[31m%s %s\e[0m\n" \
+                "[!] Issue creating $BACKGROUNDS_DIR. This shouldn't" \
+                "happen...stopping"
+            return 1
+        fi
+    fi
+
+    cp BackgroundWallpapers/* "$BACKGROUNDS_DIR" \
+        1>/dev/null 2>>$STDERR_LOG_PATH &
+    task_output $! "$STDERR_LOG_PATH" \
+        "Copy default backgrounds to proper directory"
+    [[ $? -ne 0 ]] && return 1
+
+    if ! [[ -f "$BACKGROUNDS_DIR/greenery_with_bridge.jpg" ]]
+    then
+        printf "\n\e[31m%s %s\e[0m\n" \
+            "[!] Cannot find default background in '$BACKGROUNDS_DIR'. This" \
+            "shouldn't happen...stopping"
+        return 1
+    fi
+
+    gsettings set org.gnome.desktop.background picture-uri \
+        $BACKGROUNDS_DIR/greenery_with_bridge.jpg \
+        1>/dev/null 2>>$STDERR_LOG_PATH &
+    task_output $! "$STDERR_LOG_PATH" \
+        "Set default wallpaper/background"
+    [[ $? -ne 0 ]] && return 1
+}
+
 setup_gnome_extensions
 setup_flatpak_user_repo
 setup_nvim
 set_default_editor
+add_default_wallpapers
