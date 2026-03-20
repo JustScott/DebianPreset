@@ -174,7 +174,13 @@ setup_flatpak_user_repo()
         [[ $? -ne 0 ]] && return 1
     fi
 
-    flatpak update --user --appstream &>/dev/null
+    flatpak update --user --appstream &>/dev/null \
+        >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+    task_output $! "$STDERR_LOG_PATH" \
+        "Update appstream for new flatpak remote"
+    [[ $? -ne 0 ]] && return 1
+
+    return 0
 }
 
 setup_nvim()

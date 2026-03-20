@@ -17,5 +17,5 @@ allow org.kde.kpat
 allow org.muttum.muttum
 
 # Media
-com.spotify.Client
-org.kde.audiotube
+allow com.spotify.Client
+allow org.kde.audiotube
