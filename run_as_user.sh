@@ -144,19 +144,40 @@ load_gnome_extension_settings()
     DASH_TO_PANEL_URI="/org/gnome/shell/extensions/dash-to-panel/"
     TILING_SHELL_URI="/org/gnome/shell/extensions/tilingshell/"
 
-    dconf load $DASH_TO_PANEL_URI < \
-        $EXPORTED_SETTINGS_DIR/dash_to_panel_settings.txt \
-        >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
-    task_output $! "$STDERR_LOG_PATH" \
-        "Load newest dash to panel settings"
-    [[ $? -ne 0 ]] && return 1
+    DASH_TO_PANEL_UUID="dash-to-panel@jderose9.github.com"
+    TILING_SHELL_UUID="tilingshell@ferrarodomenico.com"
 
-    dconf load $TILING_SHELL_URI < \
-        $EXPORTED_SETTINGS_DIR/tilingshell-settings.txt \
-        >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
-    task_output $! "$STDERR_LOG_PATH" \
-        "Load newest tiling shell settings (must manually import layout settings)"
-    [[ $? -ne 0 ]] && return 1
+    gnome_extension_UUIDs="$(gnome-extensions list)"
+
+    if echo "$gnome_extension_UUIDs" \
+        | grep "$DASH_TO_PANEL_UUID" &>/dev/null
+    then
+        if gnome-extensions info $DASH_TO_PANEL_UUID \
+            | grep "Enabled: Yes" &>/dev/null
+        then
+            dconf load $DASH_TO_PANEL_URI < \
+                $EXPORTED_SETTINGS_DIR/dash_to_panel_settings.txt \
+                >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+            task_output $! "$STDERR_LOG_PATH" \
+                "Load newest dash to panel settings"
+            [[ $? -ne 0 ]] && return 1
+        fi
+    fi
+
+    if echo "$gnome_extension_UUIDs" \
+        | grep "$TILING_SHELL_UUID" &>/dev/null
+    then
+        if gnome-extensions info $TILING_SHELL_UUID \
+            | grep "Enabled: Yes" &>/dev/null
+        then
+            dconf load $TILING_SHELL_URI < \
+                $EXPORTED_SETTINGS_DIR/tilingshell-settings.txt \
+                >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+            task_output $! "$STDERR_LOG_PATH" \
+                "Load newest tiling shell settings (must manually load layout)"
+            [[ $? -ne 0 ]] && return 1
+        fi
+    fi
 
     return 0
 }
