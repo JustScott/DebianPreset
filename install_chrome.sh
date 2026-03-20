@@ -54,12 +54,13 @@ install_chrome()
     if ! dpkg -s google-chrome-stable &>/dev/null
     then
         sudo -v || return 1
-        curl -s -L "$CHROME_URL" -o "google-chrome-stable_current_amd64.deb" \
+        curl -s -L "$CHROME_URL" -o \
+            "/tmp/google-chrome-stable_current_amd64.deb" \
             1>/dev/null 2>>$STDERR_LOG_PATH &
-        task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
+        task_output $! "$STDERR_LOG_PATH" "curl the google-chrome .deb file"
         [[ $? -ne 0 ]] && return 1
 
-        sudo apt-get install -y "./google-chrome-stable_current_amd64.deb" \
+        sudo apt-get install -y "/tmp/google-chrome-stable_current_amd64.deb" \
             1>/dev/null 2>>$STDERR_LOG_PATH &
         task_output $! "$STDERR_LOG_PATH" "Install Google Chrome"
         [[ $? -ne 0 ]] && return 1
