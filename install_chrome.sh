@@ -42,40 +42,79 @@ ensure_commands_installed()
             printf "\n\n\e[31m%s %s\e[0m\n\n" \
                 "[!] Missing required command: '$cmd'. This shouldn't" \
                 "happen...stopping"
-            exit 1
+            return 1
         fi
     done
 }
 
 ensure_commands_installed
 
-if ! dpkg -s google-chrome-stable &>/dev/null
-then
-    curl -s -L "$CHROME_URL" -o "google-chrome-stable_current_amd64.deb" \
-        1>/dev/null 2>>$STDERR_LOG_PATH &
-    task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
-    [[ $? -ne 0 ]] && exit 1
+install_chrome()
+{
+    if ! dpkg -s google-chrome-stable &>/dev/null
+    then
+        sudo -v || return 1
+        curl -s -L "$CHROME_URL" -o "google-chrome-stable_current_amd64.deb" \
+            1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" "wget the google-chrome .deb file"
+        [[ $? -ne 0 ]] && return 1
 
-    sudo apt-get install -y "./google-chrome-stable_current_amd64.deb" \
-        1>/dev/null 2>>$STDERR_LOG_PATH &
-    task_output $! "$STDERR_LOG_PATH" "Install Google Chrome"
-    [[ $? -ne 0 ]] && exit 1
-fi
+        sudo apt-get install -y "./google-chrome-stable_current_amd64.deb" \
+            1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" "Install Google Chrome"
+        [[ $? -ne 0 ]] && return 1
+    fi
+}
 
-if ! [[ -d "/etc/apt/apt.conf.d" ]]
-then
-    printf "\n\n\e[31m%s %s\e[0m\n\n" \
-        "[!] missing the '/etc/apt/apt.conf.d' directory. This shouldn't" \
-        "happen...stopping"
-    exit 1
-fi
+# https://support.google.com/chrome/a/answer/7517525?hl=en#zippy=%2Cset-installation-policies-automatically-install-force-install-allow-or-block
+set_chrome_extensions_policy()
+{
+    SYSTEM_EXTENSIONS_DIR="/etc/opt/chrome/policies/managed"
+    EXTENSION_POLICIES_FILE="./Configurations/Extensions/extensions.json"
 
-if ! cmp -s ./Configurations/google-chrome \
-    /etc/apt/apt.conf.d/google-chrome &>/dev/null
-then
-    sudo cp ./Configurations/google-chrome \
-        /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>>$STDERR_LOG_PATH &
-    task_output $! "$STDERR_LOG_PATH" \
-        "cp google-chrome unattended upgrades file to /etc/apt/apt.conf.d/"
-    [[ $? -ne 0 ]] && exit 1
-fi
+    if ! [[ -d "$SYSTEM_EXTENSIONS_DIR" ]]
+    then
+        sudo -v || return 1
+        sudo mkdir -p "$SYSTEM_EXTENSIONS_DIR" \
+            1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Create google chrome extensions policies directory"
+        [[ $? -ne 0 ]] && return 1
+    fi
+
+    if ! cmp -s $EXTENSION_POLICIES_FILE \
+        $SYSTEM_EXTENSIONS_DIR/extensions.json &>/dev/null
+    then
+        sudo cp $EXTENSION_POLICIES_FILE \
+            $SYSTEM_EXTENSIONS_DIR/extensions.json \
+            1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" \
+            "cp chrome extension policies file to system"
+        [[ $? -ne 0 ]] && return 1
+    fi
+}
+
+add_chrome_to_unattended_upgrades()
+{
+    if ! [[ -d "/etc/apt/apt.conf.d" ]]
+    then
+        printf "\n\n\e[31m%s %s\e[0m\n\n" \
+            "[!] missing the '/etc/apt/apt.conf.d' directory. This shouldn't" \
+            "happen...stopping"
+        return 1
+    fi
+
+    if ! cmp -s ./Configurations/google-chrome \
+        /etc/apt/apt.conf.d/google-chrome &>/dev/null
+    then
+        sudo cp ./Configurations/google-chrome \
+            /etc/apt/apt.conf.d/google-chrome 1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" \
+            "cp google-chrome unattended upgrades file to /etc/apt/apt.conf.d/"
+        [[ $? -ne 0 ]] && return 1
+    fi
+}
+
+install_chrome
+set_chrome_extensions_policy
+add_chrome_to_unattended_upgrades
