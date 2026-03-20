@@ -163,6 +163,15 @@ load_gnome_extension_settings()
 
 setup_flatpak_user_repo()
 {
+    if ! cmp -s ./Configurations/flathub_user.filter \
+        /etc/flatpak/flathub_user.filter &>/dev/null
+    then
+        printf "\n\e[31m%s %s\e[0m\n" \
+            "[!] The --user flathub filter is old or doesn't exist." \
+            "Run \`bash run_as_admin.sh\` to update it."
+        return 1
+    fi
+
     if ! flatpak remotes | grep "flathub" | grep "user" &>/dev/null
     then
         flatpak remote-add --if-not-exists --user flathub \

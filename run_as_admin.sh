@@ -104,14 +104,12 @@ install_configure_flatpak()
             sudo mkdir -p /etc/flatpak &>/dev/null
         fi
 
-        if ! sudo cp ./Configurations/flathub_user.filter \
-            /etc/flatpak/flathub_user.filter 1>/dev/null 2>>$STDERR_LOG_PATH
-        then
-            printf "\n\e[31m%s %s\e[0m\n" \
-                "[!] Failed to cp flathub filter to /etc/flatpak." \
-                "This shouldn't happen...stopping"
-            exit 1
-        fi
+        sudo cp ./Configurations/flathub_user.filter \
+            /etc/flatpak/flathub_user.filter \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Copy flathub --user filter to system"
+        [[ $? -ne 0 ]] && return 1
 
         if ! sudo chmod o+r /etc/flatpak/flathub_user.filter &>/dev/null
         then
