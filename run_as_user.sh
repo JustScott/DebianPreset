@@ -89,7 +89,7 @@ setup_gnome_extensions()
                 "[!] No extension path or uuid provided to the" \
                 "'install_enable_extension' function. this shouldn't" \
                 "happen...stopping"
-            exit 1
+            return 1
         fi
 
         if ! [[ -f "$ext_path" ]] &>/dev/null
@@ -97,7 +97,7 @@ setup_gnome_extensions()
             printf "\n\n\e[31m%s %s\e[0m\n\n" \
                 "[!] Extension bundle '$ext_path' doesn't exist, this" \
                 "shouldn't happen...stopping"
-            exit 1
+            return 1
         fi
 
         if echo "$gnome_extension_UUIDs" \
@@ -110,7 +110,7 @@ setup_gnome_extensions()
                     >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
                 task_output $! "$STDERR_LOG_PATH" \
                     "Enable Gnome extension: '$ext_UUID'"
-                [[ $? -ne 0 ]] && exit 1
+                [[ $? -ne 0 ]] && return 1
             fi
         else
             gnome-extensions install $ext_path &>/dev/null
@@ -123,7 +123,7 @@ setup_gnome_extensions()
             then
                 printf "\n\e[31m[Error]\e[0m %s\n" \
                     "Install Gnome extension: '$ext_path'"
-                exit 1
+                return 1
             fi
         fi    
     }
@@ -133,6 +133,32 @@ setup_gnome_extensions()
     install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID
     install_enable_extension $BLUR_MY_SHELL_PATH $BLUR_MY_SHELL_UUID
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
+
+    return 0
+}
+
+load_gnome_extension_settings()
+{
+    EXPORTED_SETTINGS_DIR="./Gnome/Extensions/ExportedSettings"
+
+    DASH_TO_PANEL_URI="/org/gnome/shell/extensions/dash-to-panel/"
+    TILING_SHELL_URI="/org/gnome/shell/extensions/tilingshell/"
+
+    dconf load $DASH_TO_PANEL_URI < \
+        $EXPORTED_SETTINGS_DIR/dash_to_panel_settings.txt \
+        >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+    task_output $! "$STDERR_LOG_PATH" \
+        "Load newest dash to panel settings"
+    [[ $? -ne 0 ]] && return 1
+
+    dconf load $TILING_SHELL_URI < \
+        $EXPORTED_SETTINGS_DIR/tilingshell-settings.txt \
+        >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+    task_output $! "$STDERR_LOG_PATH" \
+        "Load newest tiling shell settings (must manually import layout settings)"
+    [[ $? -ne 0 ]] && return 1
+
+    return 0
 }
 
 setup_flatpak_user_repo()
@@ -310,7 +336,7 @@ add_default_wallpapers()
     [[ $? -ne 0 ]] && return 1
 }
 
-setup_gnome_extensions
+setup_gnome_extensions && load_gnome_extension_settings
 setup_flatpak_user_repo
 setup_nvim
 set_default_editor
