@@ -15,3 +15,7 @@ allow org.blender.Blender
 allow org.gnome.Aisleriot
 allow org.kde.kpat
 allow org.muttum.muttum
+
+# Media
+com.spotify.Client
+org.kde.audiotube
