@@ -56,6 +56,10 @@ setup_gnome_extensions()
 {
     GNOME_EXTENSIONS_DIR="./Gnome/Extensions"
 
+    DESKTOP_ICONS_FILE="dingrastersoft.com.v83.shell-extension.zip"
+    DESKTOP_ICONS_PATH="$GNOME_EXTENSIONS_DIR/$DESKTOP_ICONS_FILE"
+    DESKTOP_ICONS_UUID="ding@rastersoft.com"
+
     DASH_TO_PANEL_FILE="dash-to-paneljderose9.github.com.v72.shell-extension.zip"
     DASH_TO_PANEL_PATH="$GNOME_EXTENSIONS_DIR/$DASH_TO_PANEL_FILE"
     DASH_TO_PANEL_UUID="dash-to-panel@jderose9.github.com"
@@ -75,10 +79,6 @@ setup_gnome_extensions()
     CAFFEINE_FILE="caffeinepatapon.info.v59.shell-extension.zip"
     CAFFEINE_PATH="$GNOME_EXTENSIONS_DIR/$CAFFEINE_FILE"
     CAFFEINE_UUID="caffeine@patapon.info"
-
-    DESKTOP_ICONS_FILE="dingrastersoft.com.v83.shell-extension.zip"
-    DESKTOP_ICONS_PATH="$GNOME_EXTENSIONS_DIR/$DESKTOP_ICONS_FILE"
-    DESKTOP_ICONS_UUID="ding@rastersoft.com"
 
     gnome_extension_UUIDs="$(gnome-extensions list)"
 
@@ -138,12 +138,12 @@ setup_gnome_extensions()
         fi    
     }
     
+    install_enable_extension $DESKTOP_ICONS_PATH $DESKTOP_ICONS_UUID --open-prefs
     install_enable_extension $DASH_TO_PANEL_PATH $DASH_TO_PANEL_UUID
     install_enable_extension $V_SHELL_PATH $V_SHELL_UUID
     install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID --open-prefs
     install_enable_extension $BLUR_MY_SHELL_PATH $BLUR_MY_SHELL_UUID
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
-    install_enable_extension $DESKTOP_ICONS_PATH $DESKTOP_ICONS_UUID --open-prefs
 
     return 0
 }
