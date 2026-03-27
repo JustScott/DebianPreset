@@ -212,7 +212,7 @@ setup_flatpak_user_repo()
     flatpak update --user --appstream &>/dev/null \
         >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
     task_output $! "$STDERR_LOG_PATH" \
-        "Update appstream for new flatpak remote"
+        "Update flatpak apps from filter"
     [[ $? -ne 0 ]] && return 1
 
     return 0
@@ -355,11 +355,14 @@ add_default_wallpapers()
         fi
     fi
 
-    cp BackgroundWallpapers/* "$BACKGROUNDS_DIR" \
-        1>/dev/null 2>>$STDERR_LOG_PATH &
-    task_output $! "$STDERR_LOG_PATH" \
-        "Copy default backgrounds to proper directory"
-    [[ $? -ne 0 ]] && return 1
+    cp --no-clobber BackgroundWallpapers/* "$BACKGROUNDS_DIR" \
+        1>/dev/null 2>>$STDERR_LOG_PATH
+    if [[ $? -ne 0 ]]
+    then
+        print "\n\n\e[31m%s\e\0m\n\n" \
+            "[!] Copy default backgrounds to proper directory. Check '$STDERR_LOG_PATH' for details."
+        return 1
+    fi
 
     if ! [[ -f "$BACKGROUNDS_DIR/greenery_with_bridge.jpg" ]]
     then
@@ -369,12 +372,16 @@ add_default_wallpapers()
         return 1
     fi
 
-    gsettings set org.gnome.desktop.background picture-uri \
-        $BACKGROUNDS_DIR/greenery_with_bridge.jpg \
-        1>/dev/null 2>>$STDERR_LOG_PATH &
-    task_output $! "$STDERR_LOG_PATH" \
-        "Set default wallpaper/background"
-    [[ $? -ne 0 ]] && return 1
+    if [[ "$(gsettings get org.gnome.desktop.background picture-uri)" \
+        == "'file:///usr/share/images/desktop-base/desktop-background.xml'" ]]
+    then
+        gsettings set org.gnome.desktop.background picture-uri \
+            $BACKGROUNDS_DIR/greenery_with_bridge.jpg \
+            1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Change default wallpaper/background"
+        [[ $? -ne 0 ]] && return 1
+    fi
 }
 
 setup_gnome_extensions && load_gnome_extension_settings
