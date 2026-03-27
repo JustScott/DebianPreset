@@ -86,6 +86,7 @@ setup_gnome_extensions()
     {
         ext_path=$1
         ext_UUID=$2
+        open_prefs_flag=$3
 
         if [[ -z "$ext_path" || -z "$ext_UUID" ]]
         then
@@ -115,6 +116,11 @@ setup_gnome_extensions()
                 task_output $! "$STDERR_LOG_PATH" \
                     "Enable Gnome extension: '$ext_UUID'"
                 [[ $? -ne 0 ]] && return 1
+
+                if [[ "$open_prefs_flag" == "--open-prefs" ]]
+                then
+                    gnome-extensions prefs $ext_UUID &>/dev/null
+                fi
             fi
         else
             gnome-extensions install $ext_path &>/dev/null
@@ -134,10 +140,10 @@ setup_gnome_extensions()
     
     install_enable_extension $DASH_TO_PANEL_PATH $DASH_TO_PANEL_UUID
     install_enable_extension $V_SHELL_PATH $V_SHELL_UUID
-    install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID
+    install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID --open-prefs
     install_enable_extension $BLUR_MY_SHELL_PATH $BLUR_MY_SHELL_UUID
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
-    install_enable_extension $DESKTOP_ICONS_PATH $DESKTOP_ICONS_UUID
+    install_enable_extension $DESKTOP_ICONS_PATH $DESKTOP_ICONS_UUID --open-prefs
 
     return 0
 }
