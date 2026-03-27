@@ -76,6 +76,10 @@ setup_gnome_extensions()
     CAFFEINE_PATH="$GNOME_EXTENSIONS_DIR/$CAFFEINE_FILE"
     CAFFEINE_UUID="caffeine@patapon.info"
 
+    DESKTOP_ICONS_FILE="dingrastersoft.com.v83.shell-extension.zip"
+    DESKTOP_ICONS_PATH="$GNOME_EXTENSIONS_DIR/$DESKTOP_ICONS_FILE"
+    DESKTOP_ICONS_UUID="ding@rastersoft.com"
+
     gnome_extension_UUIDs="$(gnome-extensions list)"
 
     install_enable_extension()
@@ -133,6 +137,7 @@ setup_gnome_extensions()
     install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID
     install_enable_extension $BLUR_MY_SHELL_PATH $BLUR_MY_SHELL_UUID
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
+    install_enable_extension $DESKTOP_ICONS_PATH $DESKTOP_ICONS_UUID
 
     return 0
 }
