@@ -153,4 +153,26 @@ install_configure_flatpak()
     fi
 }
 
+hide_app()
+{
+    app_desktop_file_name="$1"
+    desktop_files_path="/usr/share/applications"
+
+    full_desktop_file_path="$desktop_files_path/$app_desktop_file_name"
+
+    if ! grep "Hidden=true" "$full_desktop_file_path" &>/dev/null
+    then
+        sudo -v || return 1
+        sudo sed -i '/^\[Desktop Entry\]/a Hidden=true' \
+            "$full_desktop_file_path" 1>/dev/null 2>>$STDERR_LOG_PATH &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Hide '$app_desktop_file_name' from gnome app menu"
+    fi
+}
+
 install_configure_flatpak
+
+# Hide apps from all users (can still access terminal from run dialog)
+hide_app nvim.desktop
+hide_app org.gnome.Terminal.desktop
+hide_app org.gnome.Terminal.Preferences.desktop
