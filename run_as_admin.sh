@@ -176,3 +176,7 @@ install_configure_flatpak
 hide_app nvim.desktop
 hide_app org.gnome.Terminal.desktop
 hide_app org.gnome.Terminal.Preferences.desktop
+hide_app org.gnome.Evince.desktop
+hide_app org.gnome.Evince-previewer.desktop
+hide_app org.gnome.Loupe.desktop
+hide_app org.gnome.Totem.desktop
