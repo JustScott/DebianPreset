@@ -80,6 +80,10 @@ setup_gnome_extensions()
     CAFFEINE_PATH="$GNOME_EXTENSIONS_DIR/$CAFFEINE_FILE"
     CAFFEINE_UUID="caffeine@patapon.info"
 
+    ADD_TO_DESKTOP_FILE="add-to-desktoptommimon.github.com.v16.shell-extension.zip"
+    ADD_TO_DESKTOP_PATH="$GNOME_EXTENSIONS_DIR/$ADD_TO_DESKTOP_FILE"
+    ADD_TO_DESKTOP_UUID="add-to-desktop@tommimon.github.com"
+
     gnome_extension_UUIDs="$(gnome-extensions list)"
 
     install_enable_extension()
@@ -144,6 +148,7 @@ setup_gnome_extensions()
     install_enable_extension $TILING_SHELL_PATH $TILING_SHELL_UUID --open-prefs
     install_enable_extension $BLUR_MY_SHELL_PATH $BLUR_MY_SHELL_UUID
     install_enable_extension $CAFFEINE_PATH $CAFFEINE_UUID
+    install_enable_extension $ADD_TO_DESKTOP_PATH $ADD_TO_DESKTOP_UUID
 
     return 0
 }
