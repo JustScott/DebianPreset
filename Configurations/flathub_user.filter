@@ -3,9 +3,6 @@ deny *
 allow runtime/*
 
 # Gnome Apps
-allow org.gnome.Calendar
-allow org.gnome.TextEditor
-allow org.gnome.SimpleScan
 allow org.gnome.clocks
 allow org.gnome.Maps
 allow org.gnome.Contacts
