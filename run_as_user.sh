@@ -34,7 +34,7 @@ fi
 
 STDERR_LOG_PATH="/tmp/${USER}_debianpresetusererrors.log"
 
-VIM_CONFIG_URL="https://raw.githubusercontent.com/JustScott/Arch-Setup/refs/heads/cli/Configurations/init.vim"
+VIM_CONFIG_URL="wget https://raw.githubusercontent.com/JustScott/Linux-Setup/refs/heads/main/Configurations/nvim/init.vim"
 
 ensure_commands_installed()
 {
