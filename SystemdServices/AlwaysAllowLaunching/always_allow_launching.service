@@ -1,0 +1,9 @@
+[Unit]
+Description=Set metadata on .desktop files on the ~/Desktop to always allow launching
+
+[Service]
+ExecStart=/usr/local/bin/always_allow_launching.sh
+Restart=always
+
+[Install]
+WantedBy=default.target

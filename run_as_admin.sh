@@ -170,7 +170,60 @@ hide_app()
     fi
 }
 
+place_systemd_files()
+{
+    if ! dpkg -s inotify-tools &>/dev/null
+    then
+        sudo apt-get install --yes inotify-tools \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" \
+            "Install inotify-tools for systemd user scripts"
+        [[ $? -ne 0 ]] && return 1
+    fi
+
+    if ! [[ -d "/usr/local/bin" ]]
+    then
+        sudo -v | return 1
+        sudo mkdir -p "/usr/local/bin" &>/dev/null
+        sudo chmod 755 "/usr/local/bin" &>/dev/null
+    fi
+
+    if ! [[ -d "/etc/systemd/user" ]]
+    then
+        sudo -v | return 1
+        sudo mkdir -p "/etc/systemd/user" &>/dev/null
+        sudo chmod 755 "/etc/systemd/user" &>/dev/null
+    fi
+
+    place_always_allow_launching()
+    {
+        if ! cmp -s \
+            "./SystemdServices/AlwaysAllowLaunching/always_allow_launching.service" \
+            "/etc/systemd/user/always_allow_launching.service" &>/dev/null
+        then
+            sudo -v | return 1
+            sudo cp \
+                "./SystemdServices/AlwaysAllowLaunching/always_allow_launching.service" \
+                "/etc/systemd/user/always_allow_launching.service" &>/dev/null
+        fi
+
+        if ! cmp -s \
+            "./SystemdServices/AlwaysAllowLaunching/always_allow_launching.sh" \
+            "/usr/local/bin/always_allow_launching.sh" &>/dev/null
+        then
+            sudo -v | return 1
+            sudo cp \
+                "./SystemdServices/AlwaysAllowLaunching/always_allow_launching.sh" \
+                "/usr/local/bin/always_allow_launching.sh" &>/dev/null
+            sudo chmod 755 "/usr/local/bin/always_allow_launching.sh" &>/dev/null
+        fi
+    }
+
+    place_always_allow_launching
+}
+
 install_configure_flatpak
+place_systemd_files
 
 # Hide apps from all users (can still access terminal from run dialog)
 hide_app nvim.desktop

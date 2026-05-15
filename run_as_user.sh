@@ -395,8 +395,25 @@ add_default_wallpapers()
     fi
 }
 
+enable_systemd_user_services()
+{
+    if ! systemctl --user is-enabled always_allow_launching.service &>/dev/null
+    then
+        systemctl --user enable --now always_allow_launching.service \
+            >>"$STDOUT_LOG_PATH" 2>>"$STDERR_LOG_PATH" &
+        task_output $! "$STDERR_LOG_PATH" "Enable user service: always_allow_launching"
+        if [[ $? -ne 0 ]]
+        then
+            printf "\n\e[36m    %s %s\e[0m\n\n" "[TIP]" \
+                "You need to run the 'run_as_admin.sh' script as an admin first."
+            return 1
+        fi
+    fi
+}
+
 setup_gnome_extensions && load_gnome_extension_settings
 setup_flatpak_user_repo
 setup_nvim
 set_default_editor
 add_default_wallpapers
+enable_systemd_user_services
